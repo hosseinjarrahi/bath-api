@@ -12,7 +12,9 @@ class PassengerForm extends Base
 
     protected $guarded = ['id'];
 
-    protected $appends = ['active_service_items', 'is_past', 'payed', 'balance', 'paymentable', 'price'];
+    protected $appends = ['active_service_items', 'is_past', 'payed', 'balance', 'paymentable', 'price', 'remained_time', 'past_time'];
+
+    protected $dates = ['start_date', 'end_date', 'checkout_date'];
 
     protected $with = [
         'passenger',
@@ -56,5 +58,21 @@ class PassengerForm extends Base
     public function serviceItems()
     {
         return $this->belongsToMany(ServiceItem::class);
+    }
+
+    function getPastTimeAttribute()
+    {
+        if ($this->checkout_date)
+            return $this->start_date->diffForHumans($this->checkout_date);
+
+        return $this->start_date->diffForHumans();
+    }
+
+    function getRemainedTimeAttribute()
+    {
+        if ($this->checkout_date)
+            return $this->end_date->diffForHumans($this->checkout_date);
+
+        return $this->end_date->diffForHumans();
     }
 }

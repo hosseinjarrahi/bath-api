@@ -21,10 +21,17 @@ class ServiceController extends Controller
         \DB::beginTransaction();
 
         $serviceItems = request('service_items');
+        $passengerCodeMeli = request('code_meli');
+        $passengerName = request('name');
 
-        $passengerId = request('passenger_id');
-
-        $passenger = Passenger::find($passengerId);
+        $passenger = Passenger::firstOrCreate(
+            [
+                'code_meli' => $passengerCodeMeli,
+            ],
+            [
+                'name' => $passengerName,
+            ]
+        );
 
         $activeForm = $passenger->passengerForm();
 
@@ -41,7 +48,7 @@ class ServiceController extends Controller
         $endDate = clone ($startDate);
 
         $newForm = passengerForm::create([
-            'passenger_id' => $passengerId,
+            'passenger_id' => $passenger->id,
             'start_date' => $startDate,
             'end_date' => $endDate->addMinutes($exitTime->value),
         ]);
@@ -67,7 +74,7 @@ class ServiceController extends Controller
             }
 
             $serviceItem->update([
-                'passenger_id' => $passengerId,
+                'passenger_id' => $passenger->id,
             ]);
 
             $newForm->serviceItems()->save($serviceItem);
@@ -129,24 +136,6 @@ class ServiceController extends Controller
         return ['passenger' => $passengerForm->passenger->refresh()->load(['serviceItems']), 'message' => 'با موفقیت ثبت شد'];
     }
 
-
-    public function chooseServiceItem(Request $request)
-    {
-        $serviceItem = ServiceItem::find($request->service_item_id);
-
-        if ($serviceItem->passenger_id) {
-            return response(['message' => 'این تخت را نمیتوانید انتخاب کنید'], 400);
-        }
-
-        $message = null;
-
-        $serviceItem->update(['passenger_id' => $request->passenger_id]);
-
-        $prefferService = $serviceItem->service()->with('serviceItems.passenger')->first();
-
-        return ['message' => $message, 'service' => $prefferService];
-    }
-
     public function analyse()
     {
         $emptyServiceItems = ServiceItem::whereHas('service')->whereNull('passenger_id')->count();
@@ -180,7 +169,7 @@ class ServiceController extends Controller
         $startDate = now();
 
         $startDate->setTimeFromTimeString(request('start_date'));
-        logger($startDate);
+
         $services = Service::with(
             [
                 'serviceItems' =>
@@ -255,5 +244,14 @@ class ServiceController extends Controller
             ->paginate(100);
 
         return ['PassengerForm' => $passengerForms];
+    }
+
+    function code($code)
+    {
+        $driver = Passenger::where('code_meli', $code)->first();
+
+        return [
+            'name' => $driver->name ?? ''
+        ];
     }
 }

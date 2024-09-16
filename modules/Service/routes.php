@@ -17,3 +17,5 @@ Route::get('/passenger/reservable-service-items', [ServiceController::class, 're
 Route::get('/service/report', [ServiceController::class, 'report']);
 
 Route::get('/service/should-checkout', [ServiceController::class, 'shouldCheckout']);
+
+Route::get('/get-name-driver/{code}', [ServiceController::class, 'code']);
