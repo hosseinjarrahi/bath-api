@@ -26,15 +26,5 @@ class DatabaseSeeder extends Seeder
             'name' => 'admin',
             'permission_do' => ["*"],
         ]);
-
-        $this->call([
-            // CameraDutySeeder::class,
-            // CameraSeeder::class,
-            // DoorSeeder::class,
-            // ServiceSeeder::class,
-            // TruckLoadTypeSeeder::class,
-            // StationTariffSeeder::class,
-            StationSeeder::class
-        ]);
     }
 }
